@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Calculator</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f0f0f0;
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+        .calculator {
+            border: 2px solid #000;
+            border-radius: 10px;
+            padding: 20px;
+            background-color: #fff;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+        }
+        .display {
+            width: 80%;
+            height: 30px;
+            background-color: #e0e0e0;
+            text-align: right;
+            padding: 10px;
+            font-size: 1.5em;
+            border-radius: 5px;
+            margin: 0 auto 10px auto;
+            border: 1px solid #ccc;
+        }
+        .buttons {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            grid-template-rows: repeat(5, 50px);
+            gap: 10px;
+        }
+        button {
+            width: 100%;
+            height: 100%;
+            font-size: 1.2em;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+            background-color: gray;
+            color: white;
+        }
+        button:hover {
+            background-color: #ddd;
+        }
+        .operator {
+            background-color: gray;
+        }
+        .large-operator {
+            grid-row: span 2;
+            font-size: 2em;
+        }
+        .clear {
+            background-color: orange;
+            color: #fff;
+        }
+        .all-clear {
+            background-color: orange;
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+    <div class="calculator">
+        <div class="display" id="display">0</div>
+        <div class="buttons">
+            <button class="all-clear" onclick="allClear()">AC</button>
+            <button class="clear" onclick="clearEntry()">CE</button>
+            <button class="operator" onclick="appendOperator('/')">+-</button>
+            <button class="operator" onclick="appendOperator('/')">/</button>
+            <button onclick="appendNumber('7')">7</button>
+            <button onclick="appendNumber('8')">8</button>
+            <button onclick="appendNumber('9')">9</button>
+            <button class="operator" onclick="appendOperator('*')">*</button>
+            <button onclick="appendNumber('4')">4</button>
+            <button onclick="appendNumber('5')">5</button>
+            <button onclick="appendNumber('6')">6</button>
+            <button class="operator" onclick="appendOperator('-')">-</button>
+            <button onclick="appendNumber('1')">1</button>
+            <button onclick="appendNumber('2')">2</button>
+            <button onclick="appendNumber('3')">3</button>
+            <button class="operator large-operator" onclick="appendOperator('+')">+</button>
+            <button onclick="appendNumber('0')">0</button>
+            <button onclick="appendNumber('.')">.</button>
+            <button class="operator" onclick="calculate()">=</button>
+           
+           
+           
+            
+            
+            
+        </div>
+    </div>
+
+    <script>
+        let displayValue = '0';
+        let currentOperator = null;
+        let firstOperand = null;
+        let waitingForSecondOperand = false;
+
+        function updateDisplay() {
+            const display = document.getElementById('display');
+            display.textContent = displayValue;
+        }
+
+        function appendNumber(number) {
+            if (waitingForSecondOperand) {
+                displayValue = number;
+                waitingForSecondOperand = false;
+            } else {
+                displayValue = displayValue === '0' ? number : displayValue + number;
+            }
+            updateDisplay();
+        }
+
+        function appendOperator(operator) {
+            if (firstOperand === null) {
+                firstOperand = parseFloat(displayValue);
+            } else if (currentOperator) {
+                const result = operate(firstOperand, parseFloat(displayValue), currentOperator);
+                displayValue = String(result);
+                firstOperand = result;
+            }
+
+            currentOperator = operator;
+            waitingForSecondOperand = true;
+            updateDisplay();
+        }
+
+        function operate(operand1, operand2, operator) {
+            if (operator === '+') return operand1 + operand2;
+            if (operator === '-') return operand1 - operand2;
+            if (operator === '*') return operand1 * operand2;
+            if (operator === '/') return operand1 / operand2;
+            return operand2;
+        }
+
+        function calculate() {
+            if (currentOperator && !waitingForSecondOperand) {
+                displayValue = String(operate(firstOperand, parseFloat(displayValue), currentOperator));
+                firstOperand = null;
+                currentOperator = null;
+                updateDisplay();
+            }
+        }
+
+        function allClear() {
+            displayValue = '0';
+            currentOperator = null;
+            firstOperand = null;
+            waitingForSecondOperand = false;
+            updateDisplay();
+        }
+
+        function clearEntry() {
+            displayValue = '0';
+            updateDisplay();
+        }
+
+        document.addEventListener('DOMContentLoaded', updateDisplay);
+    </script>
+</body>
+</html>
+
+
+

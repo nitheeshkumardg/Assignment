@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GitHub Repositories Table</title>
+<style>
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 20px;
+    }
+    th, td {
+        border: 1px solid #dddddd;
+        text-align: left;
+        padding: 8px;
+    }
+    th {
+        background-color: #f2f2f2;
+        cursor: pointer;
+    }
+    tr:hover {
+        background-color: #f2f2f2;
+    }
+</style>
+</head>
+<body>
+
+<h2>GitHub Repositories for Google</h2>
+
+<input type="text" id="searchInput" placeholder="Search...">
+<table id="data-table">
+    <thead>
+        <tr>
+            <th onclick="sortTable(1)">Url_Name</th>
+            <th onclick="sortTable(2)">Language</th>
+            <th onclick="sortTable(3)">Git URL</th>
+            <th onclick="sortTable(4)">Updated At</th>
+        </tr>
+    </thead>
+    <tbody id="table-body">
+    </tbody>
+</table>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    fetchData();
+});
+
+async function fetchData() {
+    try {
+        const response = await fetch('https://api.github.com/orgs/google/repos');
+        const data = await response.json();
+        populateTable(data);
+    } catch (error) {
+        console.error('Error fetching data:', error);
+    }
+}
+
+function populateTable(data) {
+    const tableBody = document.getElementById('table-body');
+    tableBody.innerHTML = '';
+
+    data.forEach(function(repo) {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${repo.name}</td>
+            <td>${repo.language || '-'}</td>
+            <td><a href="${repo.git_url}" target="_blank">${repo.git_url}</a></td>
+            <td>${formatDate(repo.updated_at)}</td>
+        `;
+        tableBody.appendChild(row);
+    });
+
+    // Initialize sorting (default: by Name)
+    sortTable(1);
+
+    // Initialize search functionality
+    const searchInput = document.getElementById('searchInput');
+    searchInput.addEventListener('input', function() {
+        filterTable(searchInput.value.toLowerCase());
+    });
+}
+
+function sortTable(columnIndex) {
+    const table = document.getElementById('data-table');
+    const rows = Array.from(table.rows).slice(1); // Exclude the header row
+
+    rows.sort((rowA, rowB) => {
+        const cellA = rowA.cells[columnIndex].textContent.trim();
+        const cellB = rowB.cells[columnIndex].textContent.trim();
+
+        // Custom sorting for updated_at (convert to date object)
+        if (columnIndex === 4) {
+            return new Date(cellB) - new Date(cellA);
+        } else {
+            return cellA.localeCompare(cellB, undefined, { numeric: true });
+        }
+    });
+
+    // Clear existing table rows
+    while (table.rows.length > 1) {
+        table.deleteRow(1);
+    }
+
+    // Re-append sorted rows
+    rows.forEach(row => {
+        table.appendChild(row);
+    });
+}
+
+function filterTable(filterText) {
+    const rows = document.querySelectorAll('#data-table tbody tr');
+
+    rows.forEach(row => {
+        const name = row.cells[0].textContent.toLowerCase();
+        const language = row.cells[1].textContent.toLowerCase();
+        const gitUrl = row.cells[2].textContent.toLowerCase();
+        const updatedAt = row.cells[3].textContent.toLowerCase();
+
+        if (name.includes(filterText) || language.includes(filterText) || gitUrl.includes(filterText) || updatedAt.includes(filterText)) {
+            row.style.display = '';
+        } else {
+            row.style.display = 'none';
+        }
+    });
+}
+
+function formatDate(dateString) {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+}
+</script>
+
+</body>
+</html>
+
+
